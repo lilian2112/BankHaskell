@@ -9,8 +9,12 @@ newtype Debit = Debit Int
 newtype Credit = Credit Int
   deriving (Eq,Show)
 
-data AccountHistory = Date
-  { debit :: Debit
+data Date = Date String
+  deriving (Eq,Show)
+
+data AccountHistory = Activity
+  { date :: Date
+  , debit :: Debit
   , credit :: Credit
   , balance :: AccountBalance
   } deriving (Eq,Show)
@@ -24,25 +28,24 @@ data BankAccount = BankAccount
 addHistory :: [AccountHistory] -> AccountHistory -> [AccountHistory]
 addHistory oldHistory addHistoryItem = (addHistoryItem : oldHistory)
 
-deposit :: BankAccount -> Int -> BankAccount
-deposit account amount
+deposit :: BankAccount -> Int -> String -> BankAccount
+deposit account amount dateInput
    | amount <= 0 = error $ "You cannot deposit negative amount"
    | otherwise = changedAccount
         where currentBalance = case (accountBalance account) of
                                   AccountBalance balance -> balance
               newBalance     = AccountBalance (currentBalance + amount)
-              addHistoryItem     = Date {debit = Debit 0, credit = Credit amount, balance = newBalance}
+              addHistoryItem     = Activity {date = Date dateInput, debit = Debit 0, credit = Credit amount, balance = newBalance}
               newHistory     = addHistory (accountHistory account) addHistoryItem
               changedAccount = BankAccount (accountName account) newBalance newHistory
 
-
-withdraw :: BankAccount -> Int -> BankAccount
-withdraw account amount
+withdraw :: BankAccount -> Int -> String -> BankAccount
+withdraw account amount dateInput
    | amount <= 0 = error $ "You cannot withdraw a negative amount"
    | otherwise = changedAccount
         where currentBalance = case (accountBalance account) of
                                   AccountBalance balance -> balance
               newBalance     = AccountBalance (currentBalance - amount)
-              addHistoryItem     = Date {debit = Debit amount, credit = Credit 0, balance = newBalance}
+              addHistoryItem     = Activity {date = Date dateInput, debit = Debit amount, credit = Credit 0, balance = newBalance}
               newHistory     = addHistory (accountHistory account) addHistoryItem
               changedAccount = BankAccount (accountName account) newBalance newHistory
